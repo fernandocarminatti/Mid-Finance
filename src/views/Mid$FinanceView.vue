@@ -10,13 +10,34 @@ export default {
     return{
       ModalActive: false,
       CurrentSearch: '',
+      CurrentSearchIndex: '',
       MyTickers: [
         {
-          Ticker: 'Teste 01',
+          Ticker: 'TEST',
           TickerLongName: 'Nome completo',
-          Quantity: 100,
-          MidPrice: 0,
-          Orders: [],
+          TickerQuantity: 100,
+          TickerMidPrice: 0,
+          Orders: [
+            {
+              Description: 'Primeira Order TEST',
+              OrderQuantity: 10,
+              OrderPrice: 20
+            }
+          ],
+          FetchedData: {}
+        },
+        {
+          Ticker: 'TAEE11',
+          TickerLongName: 'Nome completo',
+          TickerQuantity: 100,
+          TickerMidPrice: 0,
+          Orders: [
+            {
+              Description: 'Primeira Order TAEE11',
+              OrderQuantity: 10,
+              OrderPrice: 20
+            }
+          ],
           FetchedData: {}
         }
       ]
@@ -29,6 +50,9 @@ export default {
 
     testClick(){
       console.log(this.CurrentSearch.replaceAll(' ', '').toUpperCase())
+      const san = this.CurrentSearch.replaceAll(' ','').toUpperCase()
+      this.CurrentSearchIndex = this.MyTickers.findIndex( x => x.Ticker === san)
+      console.log(this.CurrentSearchIndex)
     }
   },
 }
@@ -59,8 +83,8 @@ export default {
               <td  class="p-1" > {{ index + 1 }} </td>
               <td  class="p-1" > {{ Ticker.Ticker }} </td>
               <td  class="p-1" > {{ Ticker.TickerLongName }} </td>
-              <td  class="p-1" > {{ Ticker.Quantity }} </td>
-              <td  class="p-1" > {{ Ticker.MidPrice }} </td>
+              <td  class="p-1" > {{ Ticker.TickerQuantity }} </td>
+              <td  class="p-1" > {{ Ticker.TickerMidPrice }} </td>
               <td  class="p-1" >
                 <div>
                   <button type="button"> I </button>
@@ -72,9 +96,9 @@ export default {
         </table>
       </div>
     </div>
-    <div class="fixed z-10 top-[63px] bg-zinc-600/20 w-full h-full flex justify-center" :class="{hidden: this.ModalActive}" @click="ModalHandler()">
-      <div class="z-20 grid grid-cols-6 w-8/12 h-4/5 bg-white mt-12 rounded-xl bg-zinc-900" @click.stop="">
-        <div class=" col-start-3 col-end-5 my-8 mx-auto">
+    <div class="fixed z-10 top-[63px] bg-zinc-600/20 w-full h-full flex justify-center" :class="{hidden: !this.ModalActive}" @click="ModalHandler()">
+      <div class="z-20 grid grid-cols-8 grid-rows-6 w-8/12 h-4/5 bg-white mt-12 rounded-xl bg-zinc-900" @click.stop="">
+        <div class=" col-start-4 col-end-6 my-8 mx-auto">
           <div class="flex flex-row">
             <input maxlength="9" v-model="this.CurrentSearch" @focus="this.CurrentSearch=''"
               type="search"
@@ -82,7 +106,7 @@ export default {
               placeholder="Ticker"
               aria-label="Ticker"
               aria-describedby="button-addon1" />
-            <button @click="testClick($event)"
+            <button @click="testClick(this.CurrentSearch)"
               class="flex items-center rounded-r px-3 py-2.5 text-xs font-medium uppercase leading-tight text-white shadow-md transition duration-150 ease-in-out bg-blue-700 hover:bg-blue-500 hover:shadow-lg focus:bg-primary-700 focus:shadow-lg focus:outline-none focus:ring-0 active:shadow-lg"
               type="button"
               id="button-addon1"
@@ -101,7 +125,7 @@ export default {
             </button>
           </div>
         </div>
-        <div class="col-start-6 col-end-7 justify-self-end m-4">
+        <div class="col-start-8 col-end-9 justify-self-end m-4">
           <button type="button" class="text-zinc-400 bg-transparent hover:bg-zinc-800 hover:text-zinc-200 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center" @click="ModalHandler()">
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
               <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd">
@@ -109,7 +133,34 @@ export default {
             </svg>  
           </button>
         </div>
-        <div class="flex col-start-3 col-end-5 self-end justify-center mb-4">
+        <div class="col-start-2 col-end-8">
+          <table class="w-full text-center" >
+            <thead>
+              <tr class="border-solid border-2 border-zinc-600">
+                <th class="p-1">~</th>
+                <th class="p-1" >Ticker</th>
+                <th class="p-1" >Quantidade</th>
+                <th class="p-1" >Preço</th>
+                <th class="p-1" >...</th>
+              </tr>
+            </thead>
+            <tbody v-if="CurrentSearchIndex !== ''">
+              <tr v-for="(TickerOrder, index) in MyTickers[CurrentSearchIndex].Orders">
+                <td  class="p-1" > {{ index + 1 }} </td>
+                <td  class="p-1" > {{ TickerOrder.Description }} </td>
+                <td  class="p-1" > {{ TickerOrder.OrderQuantity }} </td>
+                <td  class="p-1" > {{ TickerOrder.OrderPrice }} </td>
+                <td  class="p-1" >
+                  <div>
+                    <button type="button"> I </button>
+                    <button type="button" class="ml-2"> X </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="flex col-start-4 col-end-6 row-start-6 self-end justify-center mb-4">
           <button class="w-24 bg-transparent hover:bg-red-500 text-white font-semibold hover:text-white py-1 px-3 border border-red-500 hover:border-transparent rounded" @click="ModalHandler()">
             Cancelar
           </button>
