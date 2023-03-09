@@ -45,10 +45,12 @@ export default {
     },
 
     ModalHandler(){
-      this.NewOrderDescription = '',
-      this.NewOrderQuantity = '',
-      this.NewOrderPrice = '',
+      this.NewOrderDescription = ''
+      this.NewOrderQuantity = ''
+      this.NewOrderPrice = ''
+      this.CurrentSearch = ''
       this.ModalActive = !this.ModalActive
+      this.TickerSearch()
     },
 
     EditTicker(TickerStr) {
@@ -75,8 +77,7 @@ export default {
     },
 
     AddNewOrder(){
-      if( this.CurrentSearch !== '') {
-
+      if( this.NewOrderQuantity !== '' || this.NewOrderPrice !== '') {
         this.CurrentSearchTickerData.TickerOrders.unshift(
           {
             Description: this.NewOrderDescription,
@@ -84,7 +85,9 @@ export default {
             OrderPrice: this.NewOrderPrice
           }
         )
-        
+        this.NewOrderDescription = ''
+        this.NewOrderQuantity = ''
+        this.NewOrderPrice = ''       
       }
     },
 
@@ -132,7 +135,7 @@ export default {
   <main class=" h-[90vh] ">
     <div class="flex flex-col my-0 mx-auto w-8/12 max-w-8/12 pt-12">
       <div class="self-start p-2">
-        <button type="button" class="text-green-500 hover:text-green-600" @click="ModalHandler()" > + Adicionar novo Ticker </button>
+        <button type="button" class="text-green-500 hover:text-green-600" @click="ModalHandler()" > + Novo Ticker </button>
       </div>
       <div class="self-center w-full h-full">
         <table class="w-full text-center table-auto">
@@ -152,7 +155,7 @@ export default {
               <td @click="EditTicker(Ticker.Ticker)" class="p-1" > {{ Ticker.Ticker }} </td>
               <td  class="p-1" > {{ Ticker.TickerLongName }} </td>
               <td  class="p-1" > {{ Ticker.TickerQuantity }} </td>
-              <td  class="p-1" > {{ Ticker.TickerMidPrice.toFixed(2) }} </td>
+              <td  class="p-1" > {{ Ticker.TickerMidPrice.toLocaleString('pt-br', {style: 'currency', currency: 'BRL'}) }} </td>
               <td  class="p-1" >
                 <div>
                   <button type="button"> I </button>
@@ -236,7 +239,7 @@ export default {
                 <td  class="p-1" > {{ OrderIndex + 1 }} </td>
                 <td  class="p-1" > {{ TickerOrder.Description }} </td>
                 <td  class="p-1" > {{ TickerOrder.OrderQuantity }} </td>
-                <td  class="p-1" > {{ TickerOrder.OrderPrice.toFixed(2) }} </td>
+                <td  class="p-1" > {{ TickerOrder.OrderPrice.toLocaleString('pt-br', {style: 'currency', currency: 'BRL'}) }} </td>
                 <td  class="p-1" >
                   <div>
                     <button type="button"> I </button>
