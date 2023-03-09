@@ -45,12 +45,9 @@ export default {
     },
 
     ModalHandler(){
-      this.CurrentSearch = '',
-      this.CurrentSearchIndex = '',
       this.NewOrderDescription = '',
       this.NewOrderQuantity = '',
       this.NewOrderPrice = '',
-      this.CurrentSearchTickerData = {}
       this.ModalActive = !this.ModalActive
     },
 
@@ -91,7 +88,7 @@ export default {
       }
     },
 
-    SaveTicker() {
+    async SaveTicker() {
       if( this.CurrentSearch !== '') {
         let CurrQuantity = 0
         let CurrMidPrice = 0
@@ -99,6 +96,7 @@ export default {
         this.CurrentSearchTickerData.TickerOrders.forEach( el => CurrMidPrice += parseFloat(el.OrderPrice))
         this.CurrentSearchTickerData.TickerQuantity = CurrQuantity
         this.CurrentSearchTickerData.TickerMidPrice = ( CurrMidPrice / this.CurrentSearchTickerData.TickerOrders.length )
+        await this.FetchTickerData()
         if(this.CurrentSearchIndex == -1) {
           this.MyTickers.unshift(this.CurrentSearchTickerData)
         } else {
@@ -107,6 +105,18 @@ export default {
         this.ModalHandler()
         this.UpdateStorage()
       }       
+    },
+
+    async FetchTickerData() {
+      let ResponseData = await fetch(`https://brapi.dev/api/quote/${this.CurrentSearch}?range=1d`)
+      let FetchedData = await ResponseData.json()
+      if (!ResponseData.ok) {
+        alert('Não foi possível encontrar dados do Ticker informado.')
+        throw new Error(`ERRO! -> status: ${ResponseData.status}`);
+      }
+      this.CurrentSearchTickerData.TickerLongName = FetchedData.results[0].longName
+      this.CurrentSearchTickerData.LastFetch = FetchedData.requestedAt
+      this.CurrentSearchTickerData.FetchedData = FetchedData.results[0]
     },
 
     UpdateStorage() {
@@ -125,7 +135,7 @@ export default {
         <button type="button" class="text-green-500 hover:text-green-600" @click="ModalHandler()" > + Adicionar novo Ticker </button>
       </div>
       <div class="self-center w-full h-full">
-        <table class="w-full text-center">
+        <table class="w-full text-center table-auto">
           <thead>
             <tr class="border-solid border-2 border-zinc-600">
               <th class="p-1">~</th>
@@ -137,7 +147,7 @@ export default {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(Ticker, TickerIndex) in MyTickers" :key="TickerIndex">
+            <tr v-for="(Ticker, TickerIndex) in MyTickers" :key="TickerIndex" class="shadow-md">
               <td  class="p-1" > {{ TickerIndex + 1 }} </td>
               <td @click="EditTicker(Ticker.Ticker)" class="p-1" > {{ Ticker.Ticker }} </td>
               <td  class="p-1" > {{ Ticker.TickerLongName }} </td>
@@ -211,7 +221,7 @@ export default {
             </div>
         </div>
         <div class="col-start-2 col-end-8">
-          <table class="w-full text-center" >
+          <table class="w-full text-center table-auto" >
             <thead>
               <tr class="border-solid border-2 border-zinc-600">
                 <th class="p-1">~</th>
