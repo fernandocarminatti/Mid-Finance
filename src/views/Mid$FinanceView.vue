@@ -58,8 +58,8 @@ export default {
 
     TickerModalHandler(){
       this.TickerModalActive = !this.TickerModalActive
-      this.TickerSearch()
     },
+
 
     EditTicker(TickerStr) {
       this.TickerModalHandler()
@@ -87,7 +87,6 @@ export default {
     OrderSearch() {
       if( this.MyOrders.find(el => el.OrderDate == this.OrderDate) !== undefined ){
         let strFinder = this.MyOrders.findIndex( el => el.OrderDate == this.OrderDate)
-        console.log('ja tem', strFinder)
         this.CurrentOrder = this.MyOrders[strFinder]
         this.OrderQuantity = this.CurrentOrder.OrderQuantity
         this.OrderTotalTax = this.CurrentOrder.OrderTotalTax
@@ -98,8 +97,6 @@ export default {
             OrderTotalTax: this.OrderTotalTax,
             Data: []
           }
-        console.log('nao tem')
-        console.log(this.MyOrders.findIndex(el => el.OrderDate == this.OrderDate))
       }
     },
 
@@ -114,8 +111,57 @@ export default {
         this.NewTickerOrder = ''
         this.NewTickerOrderQuantity = ''
         this.NewTickerOrderPrice = ''      
-        console.log(this.CurrentOrder)
+      }
+    },
 
+    NewOrderSave() {
+      if( this.MyOrders.find(el => el.OrderDate == this.OrderDate) !== undefined ) {
+        let strFinder = this.MyOrders.findIndex( el => el.OrderDate == this.OrderDate)
+        this.CurrentOrder.OrderQuantity = this.OrderQuantity
+        this.CurrentOrder.OrderTotalTax = this.OrderTotalTax 
+        this.MyOrders.splice([strFinder], 1, this.CurrentOrder)
+        this.UpdateMyTickers(this.CurrentOrder)
+        this.UpdateOrderStorage()
+        this.UpdateTickerStorage()
+        this.NewOrderModalHandler()
+      } else {
+        this.UpdateMyTickers(this.CurrentOrder)
+        this.MyOrders.push(this.CurrentOrder)
+        this.UpdateOrderStorage()
+        this.UpdateTickerStorage()
+        this.NewOrderModalHandler()
+      }
+    },
+
+    UpdateMyTickers(Order) {
+      for( let Ticker of Order.Data) {
+        if( this.MyTickers.findIndex( el => el.Ticker == Ticker.TickerOrder) !== -1) {
+          let strFinder = this.MyTickers.findIndex( el => el.Ticker == Ticker.TickerOrder)
+          console.log(Order)
+          this.MyTickers[strFinder].TickerOrders.push(
+            {
+              TickerOrderDate: Order.OrderDate,
+              TickerOrder: Ticker.TickerOrder,
+              TickerQuantity: Ticker.TickerQuantity,
+              TickerPrice: Ticker.TickerPrice
+            })
+        } else {
+          this.MyTickers.unshift({
+            Ticker: Ticker.TickerOrder,
+            TickerLongName: '',
+            TickerQuantity: Ticker.TickerQuantity,
+            TickerMidPrice: Ticker.TickerPrice,
+            TickerOrders: [
+              {
+                TickerOrderDate: Order.OrderDate,
+                TickerOrder: Ticker.TickerOrder,
+                TickerQuantity: Ticker.TickerQuantity,
+                TickerPrice: Ticker.TickerPrice
+              }
+            ],
+            FetchedData: {}
+          })
+        }
       }
     },
 
@@ -150,23 +196,8 @@ export default {
       this.CurrentSearchTickerData.FetchedData = FetchedData.results[0]
     },
 
-    NewOrderSave() {
-      if( this.MyOrders.find(el => el.OrderDate == this.OrderDate) !== undefined ) {
-        let strFinder = this.MyOrders.findIndex( el => el.OrderDate == this.OrderDate)
-        this.CurrentOrder.OrderQuantity = this.OrderQuantity
-        this.CurrentOrder.OrderTotalTax = this.OrderTotalTax 
-        this.MyOrders.splice([strFinder], 1, this.CurrentOrder)
-        console.log(this.MyOrders)
-        this.UpdateOrderStorage()
-      } else {
-        this.MyOrders.push(this.CurrentOrder)
-        console.log(this.MyOrders)
-        this.UpdateOrderStorage()
-      }
-    },
 
     UpdateOrderStorage() {
-      console.log('update Order')
       localStorage.setItem('Orders', JSON.stringify(this.MyOrders))
     },
 
@@ -197,13 +228,13 @@ export default {
               <th class="p-1 border-solid border-2 border-black bg-zinc-600 " >...</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody v-if="MyTickers !== ''">
             <tr v-for="(Ticker, TickerIndex) in MyTickers" :key="TickerIndex" class="shadow-md">
               <td  class="p-1" > {{ TickerIndex + 1 }} </td>
               <td @click="EditTicker(Ticker.Ticker)" class="p-1" > {{ Ticker.Ticker }} </td>
               <td  class="p-1" > {{ Ticker.TickerLongName }} </td>
               <td  class="p-1" > {{ Ticker.TickerQuantity }} </td>
-              <td  class="p-1" > {{ Ticker.TickerMidPrice.toLocaleString('pt-br', {style: 'currency', currency: 'BRL'}) }} </td>
+              <td  class="p-1" > {{ Ticker.TickerMidPrice}} </td>
               <td  class="p-1" >
                 <div class="flex flex-row justify-center items-center">
                   <button type="button" class="w-8 h-8">
@@ -274,18 +305,18 @@ export default {
             <thead>
               <tr>
                 <th class="p-2 sticky top-0 border-solid border-2 border-zinc-600 bg-zinc-600 ">~</th>
-                <th class="p-2 sticky top-0 border-solid border-2 border-zinc-600 bg-zinc-600 " >Descrição</th>
+                <th class="p-2 sticky top-0 border-solid border-2 border-zinc-600 bg-zinc-600 " >Ticker</th>
                 <th class="p-2 sticky top-0 border-solid border-2 border-zinc-600 bg-zinc-600 " >Quantidade</th>
                 <th class="p-2 sticky top-0 border-solid border-2 border-zinc-600 bg-zinc-600 " >Preço</th>
                 <th class="p-2 sticky top-0 border-solid border-2 border-zinc-600 bg-zinc-600 " >...</th>
               </tr>
             </thead>
             <tbody v-if="this.CurrentSearchTickerData !== undefined">
-              <tr v-for="(TickerOrder, OrderIndex) in this.CurrentSearchTickerData.TickerOrders" :key="OrderIndex" class="shadow-md">
-                <td  class="p-2 " > {{ OrderIndex + 1 }} </td>
-                <td  class="p-2 " > {{ TickerOrder.Description }} </td>
-                <td  class="p-2 " > {{ TickerOrder.OrderQuantity }} </td>
-                <td  class="p-2 " > {{ TickerOrder.OrderPrice.toLocaleString('pt-br', {style: 'currency', currency: 'BRL'}) }} </td>
+              <tr v-for="(TickerOrder, Index) in CurrentSearchTickerData.TickerOrders" :key="Index" class="shadow-md">
+                <td  class="p-2 " > {{ Index }} </td>
+                <td  class="p-2 " > {{ TickerOrder.TickerOrder }} </td>
+                <td  class="p-2 " > {{ TickerOrder.TickerQuantity }} </td>
+                <td  class="p-2 " > {{ TickerOrder.TickerPrice.toLocaleString('pt-br', {style: 'currency', currency: 'BRL'})  }} </td>
                 <td  class="p-2 " >
                   <div>
                     <button @click="RemoveOrder(OrderIndex)" type="button" class="ml-2">
